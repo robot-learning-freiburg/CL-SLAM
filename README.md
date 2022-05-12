@@ -1,5 +1,5 @@
 # Continual SLAM
-[**arXiv**](https://arxiv.org/abs/2203.01578) | [**website**](http://continual-slam.cs.uni-freiburg.de/)
+[**arXiv**](https://arxiv.org/abs/2203.01578) | [**Website**](http://continual-slam.cs.uni-freiburg.de/) | [**Video**](https://youtu.be/ASEzwnV4vNk)
 
 This repository is the official implementation of the paper:
 
