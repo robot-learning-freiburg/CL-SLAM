@@ -1,0 +1,3 @@
+[submodule "third_party/g2opy"]
+	path = third_party/g2opy
+	url = https://github.com/uoip/g2opy.git

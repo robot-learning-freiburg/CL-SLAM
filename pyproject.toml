@@ -1,0 +1,49 @@
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 100
+indent_width = 4
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+
+[tool.pylint.master]
+extension-pkg-whitelist = "cv2"
+jobs = 0
+
+[tool.pylint.design]
+min-public-methods = 1
+
+[tool.pylint.refactoring]
+max-nested-blocks = 6
+
+[tool.pylint.format]
+max-line-length = 100
+ignore-long-lines = "^\\s*(# )?<?https?://\\S+>?$"
+max-module-lines=1500
+
+[tool.pylint.typecheck]
+generated-members = [
+    "numpy.*",
+    "torch.*",
+    "g2o.*",
+]
+
+[tool.pylint.string]
+check-quote-consistency = "yes"
+
+[tool.pylint.messages_control]
+disable = [
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "fixme",
+    "too-many-instance-attributes",
+    "too-many-locals",
+    "too-many-arguments",
+    "too-many-statements",
+    "too-many-branches",
+    "unused-variable",
+    "invalid-name",
+    "duplicate-code",
+]
