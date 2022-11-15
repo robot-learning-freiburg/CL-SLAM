@@ -111,7 +111,7 @@ You can either download the resulting weights, where we masked potentially dynam
 ```python
 python main_pretrain.py
 ```
-Model weights: http://panoptic.cs.uni-freiburg.de/static/models/cityscapes_maskes_pretrain.zip (Please unzip the file after download.)
+Model weights: http://continual-slam.cs.uni-freiburg.de/static/models/cityscapes_masks_pretrain.zip (Please unzip the file after download.)
 
 
 ## 🗺️ Adaptation with CL-SLAM
