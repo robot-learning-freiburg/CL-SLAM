@@ -35,7 +35,7 @@ Extensive evaluations of CL-SLAM in three different environments demonstrate tha
 
 # 🏗 Setup
 
-Clone repository: `git clone --recurse-submodules git@github.com:vniclas/continual_slam.git`
+Clone repository: `git clone --recurse-submodules https://github.com/robot-learning-freiburg/CL-SLAM.git`
 
 ## ⚙️ Installation
 - Create conda environment: `conda create --name continual_slam python=3.8`
@@ -127,6 +127,7 @@ In the configuration file [`config/config_adapt.yaml`](config/config_adapt.yaml)
 - `Dataset.dataset_path` --> Set the path to the data
 - `DepthPosePrediction.load_weights_folder` --> Should be the path to the weights from pre-training or the previous adaptation
 - `Slam.dataset_sequence` --> Set the KITTI sequence, or `1` or `2` for RobotCar
+- `Slam.logging` --> If this is set to true, make sure to enable dataloaders in the [`slam/slam.py`](slam/slam.py) have `with_depths` argument set to `True`, also make sure that you have `gt_depth` in your dataset folder
 
 Then run:
 ```python
