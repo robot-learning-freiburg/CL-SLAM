@@ -7,7 +7,7 @@ This repository is the official implementation of the paper:
 >
 > [Niclas Vödisch](https://vniclas.github.io/), [Daniele Cattaneo](https://rl.uni-freiburg.de/people/cattaneo), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard/), and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada).
 >
-> *Proceedings of the International Symposium on Robotics Research (ISRR)*, 2022
+> *International Symposium on Robotics Research (ISRR)*, 2022
 
 <p align="center">
   <img src="cl-slam_architecture.png" alt="Overview of CL-SLAM architecture" width="600" />
@@ -15,11 +15,15 @@ This repository is the official implementation of the paper:
 
 If you find our work useful, please consider citing our paper:
 ```
-@inproceedings{voedisch2022continual,
-  title={Continual SLAM: Beyond Lifelong Simultaneous Localization and Mapping through Continual Learning},
-  author={V{\"o}disch, Niclas and Cattaneo, Daniele and Burgard, Wolfram and Valada, Abhinav},
-  booktitle={Proceedings of the International Symposium on Robotics Research (ISRR)},
-  year={2022}
+@InProceedings{voedisch2023clslam,
+  author="V{\"o}disch, Niclas and Cattaneo, Daniele and Burgard, Wolfram and Valada, Abhinav",
+  editor="Billard, Aude and Asfour, Tamim and Khatib, Oussama",
+  title="Continual SLAM: Beyond Lifelong Simultaneous Localization and Mapping Through Continual Learning",
+  booktitle="Robotics Research",
+  year="2023",
+  publisher="Springer Nature Switzerland",
+  address="Cham",
+  pages="19--35",
 }
 ```
 
