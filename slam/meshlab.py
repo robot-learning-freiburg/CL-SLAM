@@ -48,6 +48,27 @@ class MeshlabInf:
     def clear(self):
         self.__init__()
 
+    def add_camera(self, p, color=DEFAULT_COLOR, scale=0.1, rotation=np.eye(3), camera_matrix=np.eye(3)):
+        q = 1 / camera_matrix[0, 0]
+        b = 1 / camera_matrix[1, 1]
+        u = camera_matrix[-1, 0] / q
+        v = camera_matrix[-1, 1] / b
+        pts = (
+                np.array(
+                    [+u, +v, +0, -q, -b, +1, -q, +b, +1, +q, +b, +1, +q, -b, +1, +q, +v, +0, +u, +b, +0]
+                ).reshape(-1, 3)
+                * scale
+        )
+        zup_from_zfwd = np.array([[0.0, -1.0, -0.0], [0.0, 0.0, -1.0], [1.0, 0.0, 0.0]])
+        pts = pts @ zup_from_zfwd
+        pts = pts @ rotation.T
+        pts = pts + np.array(p).flatten()
+
+        n = self._xyzrgb.shape[0]
+        self.add_points(pts, color)
+        f = np.array([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1, 0, 5, 6]).reshape(-1, 3)
+        self.add_faces(list(f + n))
+
     def add_line(self, p1, p2, c=None):
         self.add_points(p1, c)
         self.add_points(p2, c)

@@ -237,7 +237,7 @@ def calc_sequence_errors(pred_poses, gt_poses):
 
             # Compute rotational and translational errors
             pose_delta_gt = np.linalg.inv(gt_poses[first_frame]) @ gt_poses[last_frame]
-            pose_delta_pred = np.linalg.inv(pred_poses[first_frame]) @ gt_poses[last_frame]
+            pose_delta_pred = np.linalg.inv(pred_poses[first_frame]) @ pred_poses[last_frame]
             pose_error = np.linalg.inv(pose_delta_pred) @ pose_delta_gt
             rot_error = rotation_error(pose_error) / length
             trans_error = translation_error(pose_error) / length

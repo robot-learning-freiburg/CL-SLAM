@@ -45,7 +45,8 @@ class DepthPosePrediction:
         self.width = dataset_config.width
         self.train_set = config.train_set
         self.val_set = config.val_set
-        self.resnet = config.resnet
+        self.resnet_depth = config.resnet_depth
+        self.resnet_pose = config.resnet_pose
         self.resnet_pretrained = config.resnet_pretrained
         self.scales = config.scales
         self.learning_rate = config.learning_rate
@@ -85,7 +86,7 @@ class DepthPosePrediction:
             self.val_set = tuple(self.val_set)
         if dataset_config.dataset == 'Kitti':
             if isinstance(self.val_set, int):
-                self.val_set = (self.val_set, )
+                self.val_set = (self.val_set,)
             if isinstance(self.train_set, str):
                 if self.train_set != 'all':
                     raise ValueError('train_set of KITTI only accepts these strings: ["all"]')
@@ -93,16 +94,16 @@ class DepthPosePrediction:
                     s for s in range(11) if s not in self.val_set and s != 3  # No IMU for seq 3
                 ])
             elif isinstance(self.train_set, int):
-                self.train_set = (self.train_set, )
+                self.train_set = (self.train_set,)
             if not (isinstance(self.train_set, tuple) and isinstance(self.train_set[0], int)):
                 raise ValueError('Passed invalid value for train_set')
             if not (isinstance(self.val_set, tuple) and isinstance(self.val_set[0], int)):
                 raise ValueError('Passed invalid value for val_set')
         elif dataset_config.dataset in ['Cityscapes', 'RobotCar']:
             if isinstance(self.train_set, str):
-                self.train_set = (self.train_set, )
+                self.train_set = (self.train_set,)
             if isinstance(self.val_set, str):
-                self.val_set = (self.val_set, )
+                self.val_set = (self.val_set,)
             if not (isinstance(self.train_set, tuple) and isinstance(self.train_set[0], str)):
                 raise ValueError('Passed invalid value for train_set')
             if not (isinstance(self.val_set, tuple) and isinstance(self.val_set[0], str)):
@@ -121,15 +122,15 @@ class DepthPosePrediction:
             # Set the main GPU for gradient averaging etc.
             torch.cuda.set_device(self.gpu_ids[0])
         elif self.gpu_ids is None and torch.cuda.is_available():
-            self.gpu_ids = (0, )
+            self.gpu_ids = (0,)
         # =================================================
 
         # Construct networks ==============================
         self.models = {}
-        self.models['depth_encoder'] = ResnetEncoder(self.resnet, self.resnet_pretrained)
+        self.models['depth_encoder'] = ResnetEncoder(self.resnet_depth, self.resnet_pretrained)
         self.models['depth_decoder'] = DepthDecoder(self.models['depth_encoder'].num_ch_encoder,
                                                     self.scales)
-        self.models['pose_encoder'] = ResnetEncoder(self.resnet, self.resnet_pretrained,
+        self.models['pose_encoder'] = ResnetEncoder(self.resnet_pose, self.resnet_pretrained,
                                                     self.num_pose_frames)
         self.models['pose_decoder'] = PoseDecoder(self.models['pose_encoder'].num_ch_encoder,
                                                   num_input_features=1,
@@ -138,10 +139,12 @@ class DepthPosePrediction:
         self.use_online = use_online
         self.online_models = {}
         if self.use_online:
-            self.online_models['depth_encoder'] = ResnetEncoder(self.resnet, self.resnet_pretrained)
+            self.online_models['depth_encoder'] = ResnetEncoder(self.resnet_depth,
+                                                                self.resnet_pretrained)
             self.online_models['depth_decoder'] = DepthDecoder(
                 self.online_models['depth_encoder'].num_ch_encoder, self.scales)
-            self.online_models['pose_encoder'] = ResnetEncoder(self.resnet, self.resnet_pretrained,
+            self.online_models['pose_encoder'] = ResnetEncoder(self.resnet_pose,
+                                                               self.resnet_pretrained,
                                                                self.num_pose_frames)
             self.online_models['pose_decoder'] = PoseDecoder(
                 self.models['pose_encoder'].num_ch_encoder,
@@ -155,8 +158,8 @@ class DepthPosePrediction:
         self.backproject_depth_single = {}
         self.project_3d_single = {}
         for scale in self.scales:
-            h = self.height // (2**scale)
-            w = self.width // (2**scale)
+            h = self.height // (2 ** scale)
+            w = self.width // (2 ** scale)
             self.backproject_depth[scale] = BackprojectDepth(self.batch_size, h, w)
             self.project_3d[scale] = Project3D(self.batch_size, h, w)
 
@@ -245,10 +248,10 @@ class DepthPosePrediction:
                       disable=not verbose) as pbar:
                 for batch_i, sample_i in enumerate(self.train_loader):
                     # Run a single step
+                    self.optimizer.zero_grad()
                     outputs, losses = self._process_batch(sample_i)
                     loss.append(losses['loss'].item())
 
-                    self.optimizer.zero_grad()
                     losses['loss'].backward()
                     self.optimizer.step()
 
@@ -286,12 +289,11 @@ class DepthPosePrediction:
             self.save_model()
 
     def adapt(self,
-              inputs: Dict[Any, Tensor],
+              online_data: Dict[Any, Tensor],
+              training_data: Optional[Dict[Any, Tensor]] = None,
               online_index: int = 0,
               steps: int = 1,
-              online_loss_weight: Optional[float] = None,
-              use_expert: bool = True,
-              do_adapt: bool = True):
+              online_loss_weight: Optional[float] = None):
         if online_loss_weight is None:
             loss_weights = None
         elif self.batch_size == 1:
@@ -302,30 +304,19 @@ class DepthPosePrediction:
             loss_weights[online_index] = online_loss_weight
             loss_weights[np.arange(self.batch_size) != online_index] = buffer_loss_weight
 
-        if do_adapt:
+        if training_data is not None:
             self._set_adapt(freeze_encoder=True)
-        else:
-            self._set_eval()
-            steps = 1
-
-        for _ in range(steps):
-            outputs, losses = self._process_batch(inputs, loss_weights)
-            if do_adapt:
+            for _ in range(steps):
+                outputs_eval, losses = self._process_batch(training_data, loss_weights)
                 self.optimizer.zero_grad()
                 losses['loss'].backward()
                 self.optimizer.step()
+        else:
+            self._set_eval()
+            with torch.no_grad():
+                outputs_eval, losses = self._process_batch(online_data, loss_weights)
 
-        if self.batch_size != 1 and use_expert:
-            online_inputs = {key: value[online_index].unsqueeze(0) for key, value in inputs.items()}
-            for _ in range(steps):
-                online_outputs, online_losses = self._process_batch(online_inputs, use_online=True)
-                self.online_optimizer.zero_grad()
-                online_losses['loss'].backward()
-                self.online_optimizer.step()
-            outputs = online_outputs
-            losses = online_losses
-
-        return outputs, losses
+        return outputs_eval, losses
 
     def validate(self) -> float:
         """ Compute the validation loss(es)
@@ -351,9 +342,9 @@ class DepthPosePrediction:
         return float(np.mean(loss))
 
     def compute_depth_error(
-        self,
-        median_scaling: bool = True,
-        print_results: bool = True,
+            self,
+            median_scaling: bool = True,
+            print_results: bool = True,
     ) -> Dict[str, float]:
         """ Compute error metrics for depth prediction
         Follows monodepth2 implementation:
@@ -413,6 +404,7 @@ class DepthPosePrediction:
                 outputs = self._predict_disparity(sample_i)
                 disparity = outputs[('disp', 0)].squeeze().cpu().detach().numpy()
                 pred_depth = disp_to_depth(disparity, self.min_depth, None)
+                # pylint: disable-next=no-member
                 pred_depth = cv2.resize(pred_depth, (gt_width, gt_height))
 
                 # Mask out pixels without ground truth depth
@@ -438,15 +430,15 @@ class DepthPosePrediction:
                 # Compute error metrics
                 thresh = np.maximum((gt_depth / pred_depth), (pred_depth / gt_depth))
                 a1 += np.mean(thresh < 1.25)
-                a2 += np.mean(thresh < 1.25**2)
-                a3 += np.mean(thresh < 1.25**3)
-                rmse = (gt_depth - pred_depth)**2
+                a2 += np.mean(thresh < 1.25 ** 2)
+                a3 += np.mean(thresh < 1.25 ** 3)
+                rmse = (gt_depth - pred_depth) ** 2
                 rmse_tot += np.sqrt(np.mean(rmse))
-                rmse_log = (np.log(gt_depth) - np.log(pred_depth))**2
+                rmse_log = (np.log(gt_depth) - np.log(pred_depth)) ** 2
                 rmse_log_tot += np.sqrt(np.mean(rmse_log))
                 abs_diff += np.mean(np.abs(gt_depth - pred_depth))
                 abs_rel += np.mean(np.abs(gt_depth - pred_depth) / gt_depth)
-                sq_rel += np.mean(((gt_depth - pred_depth)**2) / gt_depth)
+                sq_rel += np.mean(((gt_depth - pred_depth) ** 2) / gt_depth)
 
                 num_samples += 1
                 pbar.update(1)
@@ -562,14 +554,14 @@ class DepthPosePrediction:
         return depth
 
     def predict_from_images(
-        self,
-        image_0: Tensor,
-        image_1: Tensor,
-        as_numpy: bool = True,
-        return_loss: bool = False,
-        camera_matrix: Optional[Tensor] = None,
-        inv_camera_matrix: Optional[Tensor] = None,
-        relative_distance: Optional[Tensor] = None,
+            self,
+            image_0: Tensor,
+            image_1: Tensor,
+            as_numpy: bool = True,
+            return_loss: bool = False,
+            camera_matrix: Optional[Tensor] = None,
+            inv_camera_matrix: Optional[Tensor] = None,
+            relative_distance: Optional[Tensor] = None,
     ):
         """ Take two images as input and return depth for both and relative pose
         """
@@ -625,7 +617,7 @@ class DepthPosePrediction:
                 ('relative_distance', 0): relative_distance.to(self.device)
             }
             self._reconstruct_images(inputs, outputs)
-            losses = self._compute_loss(inputs, outputs, scales=(0, ))
+            losses = self._compute_loss(inputs, outputs, scales=(0,))
             for k, v in losses.items():
                 losses[k] = v.squeeze().cpu().detach().numpy()
             self.frame_ids = frame_ids
@@ -634,11 +626,11 @@ class DepthPosePrediction:
         return depth_0, depth_1, transformation
 
     def predict_pose(
-        self,
-        image_0: Tensor,
-        image_1: Tensor,
-        as_numpy: bool = True,
-        use_online: bool = False,
+            self,
+            image_0: Tensor,
+            image_1: Tensor,
+            as_numpy: bool = True,
+            use_online: bool = False,
     ) -> Tuple[Union[Tensor, np.ndarray], Union[Tensor, np.ndarray]]:
         if not self.is_trained:
             warnings.warn('The model has not been trained yet.', RuntimeWarning)
@@ -912,10 +904,10 @@ class DepthPosePrediction:
                                          drop_last=True)
 
     def _process_batch(
-        self,
-        inputs: Dict[Any, Tensor],
-        loss_sample_weights: Optional[Tensor] = None,
-        use_online: bool = False,
+            self,
+            inputs: Dict[Any, Tensor],
+            loss_sample_weights: Optional[Tensor] = None,
+            use_online: bool = False,
     ) -> Tuple[Dict[Any, Tensor], Dict[str, Tensor]]:
         """
         Pass a minibatch through the network
@@ -978,13 +970,13 @@ class DepthPosePrediction:
             outputs[('cam_T_cam', 0,
                      frame_i)] = transformation_from_parameters(axis_angle,
                                                                 translation,
-                                                                invert=(frame_i < 0))
+                                                                invert=frame_i < 0)
         return outputs
 
     def _reconstruct_images(
-        self,
-        inputs: Dict[Any, Tensor],
-        outputs: Dict[Any, Tensor],
+            self,
+            inputs: Dict[Any, Tensor],
+            outputs: Dict[Any, Tensor],
     ) -> None:
         """Generate the warped (reprojected) color images for a minibatch.
         Generated images are added to the 'outputs' dictionary.
@@ -1025,11 +1017,11 @@ class DepthPosePrediction:
                                                                   align_corners=True)
 
     def _compute_loss(
-        self,
-        inputs: Dict[Any, Tensor],
-        outputs: Dict[Any, Tensor],
-        scales: Optional[Tuple[int, ...]] = None,
-        sample_weights: Optional[Tensor] = None,
+            self,
+            inputs: Dict[Any, Tensor],
+            outputs: Dict[Any, Tensor],
+            scales: Optional[Tuple[int, ...]] = None,
+            sample_weights: Optional[Tensor] = None,
     ) -> Dict[str, Tensor]:
         """Compute the losses for a minibatch.
         """
@@ -1099,7 +1091,7 @@ class DepthPosePrediction:
             losses[f'smooth_loss/scale_{scale}'] = smooth_loss
             # ==================================================
 
-            regularization_loss = self.disparity_smoothness / (2**scale) * smooth_loss
+            regularization_loss = self.disparity_smoothness / (2 ** scale) * smooth_loss
             losses[f'reg_loss/scale_{scale}'] = regularization_loss
             # ==================================================
 
@@ -1131,9 +1123,9 @@ class DepthPosePrediction:
     # Losses
 
     def _compute_velocity_loss(
-        self,
-        inputs: Dict[Any, Tensor],
-        outputs: Dict[Any, Tensor],
+            self,
+            inputs: Dict[Any, Tensor],
+            outputs: Dict[Any, Tensor],
     ) -> Tensor:
         batch_size = inputs['index'].shape[0]  # might be different from self.batch_size
         velocity_loss = torch.zeros(batch_size, device=self.device).squeeze()
@@ -1155,9 +1147,9 @@ class DepthPosePrediction:
 
     @staticmethod
     def _compute_smooth_loss(
-        disp: Tensor,
-        img: Tensor,
-        mask: Tensor,
+            disp: Tensor,
+            img: Tensor,
+            mask: Tensor,
     ) -> Tensor:
         """Computes the smoothness loss for a disparity image
         The color image is used for edge-aware smoothness
@@ -1184,9 +1176,9 @@ class DepthPosePrediction:
         return smooth_loss
 
     def _compute_reprojection_loss(
-        self,
-        pred: Tensor,
-        target: Tensor,
+            self,
+            pred: Tensor,
+            target: Tensor,
     ) -> Tensor:
         """Computes reprojection loss between a batch of predicted and target images
         This is the photometric error
@@ -1203,9 +1195,9 @@ class DepthPosePrediction:
     # Logging
 
     def save_prediction(
-        self,
-        inputs: Dict[Any, Tensor],
-        outputs: Dict[Any, Tensor],
+            self,
+            inputs: Dict[Any, Tensor],
+            outputs: Dict[Any, Tensor],
     ) -> None:
         save_folder = self.log_path / 'prediction' / f'val_depth_{self.epoch:03}'
         save_folder.mkdir(parents=True, exist_ok=True)
@@ -1253,9 +1245,9 @@ class DepthPosePrediction:
 
     def _init_wandb(self):
         # Name of the run as shown in the wandb GUI
-        name = self.log_path.name.replace('log_', '')
+        name = self.log_path.name
 
-        wandb.init(project='CL-SLAM', name=name)
+        wandb.init(project='continual_slam', name=name)
         wandb.config.dataset_type = self.dataset_type
         wandb.config.train_set = self.train_set
         wandb.config.val_set = self.val_set
@@ -1263,7 +1255,8 @@ class DepthPosePrediction:
         wandb.config.width = self.width
         wandb.config.batch_size = self.batch_size
         wandb.config.num_workers = self.num_workers
-        wandb.config.resnet = self.resnet
+        wandb.config.resnet_depth = self.resnet_depth
+        wandb.config.resnet_pose = self.resnet_pose
         wandb.config.learning_rate = self.learning_rate
         wandb.config.scheduler_step_size = self.scheduler_step_size
         wandb.config.min_depth = self.min_depth

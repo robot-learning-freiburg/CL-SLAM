@@ -10,6 +10,7 @@ from datasets import Config as Dataset
 from depth_pose_prediction import Config as DepthPosePrediction
 from loop_closure_detection import Config as LoopClosureDetection
 from slam import Config as Slam
+from slam import ReplayBufferConfig as ReplayBuffer
 
 
 class ConfigParser():
@@ -21,6 +22,7 @@ class ConfigParser():
         self.depth_pose = None
         self.loop_closure = None
         self.slam = None
+        self.replay_buffer = None
 
         self.parse()
 
@@ -93,6 +95,8 @@ class ConfigParser():
             self.loop_closure = LoopClosureDetection(**self.config_dict['LoopClosureDetection'])
         if 'Slam' in self.config_dict:
             self.slam = Slam(**self.config_dict['Slam'])
+        if 'ReplayBuffer' in self.config_dict:
+            self.replay_buffer = ReplayBuffer(**self.config_dict['ReplayBuffer'])
 
     def __str__(self):
         string = ''

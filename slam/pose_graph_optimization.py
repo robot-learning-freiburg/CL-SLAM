@@ -134,4 +134,11 @@ class PoseGraphOptimization(g2o.SparseOptimizer):
                 meshlab.add_points(point)
             for edge in self.edge_vertices:
                 meshlab.add_line(points[edge[0]], points[edge[1]])
+
+            # for vertex_id, vertex in self.vertices().items():
+            #     if isinstance(vertex, g2o.VertexSE3):
+            #         p = vertex.estimate().matrix()[:3, 3]
+            #         r = vertex.estimate().matrix()[:3, :3]
+            #         meshlab.add_camera(p, rotation=r)
+
             meshlab.write(filename, verbose=verbose)

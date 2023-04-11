@@ -1,19 +1,22 @@
 # Continual SLAM
 [**arXiv**](https://arxiv.org/abs/2203.01578) | [**Website**](http://continual-slam.cs.uni-freiburg.de/) | [**Video**](https://youtu.be/ASEzwnV4vNk)
 
-This repository is the official implementation of the paper:
+This repository is the official implementation of the papers **Continual SLAM** and **CoVIO**:
 
-> **Continual SLAM: Beyond Lifelong Simultaneous Localization and Mapping through Continual Learning**
->
-> [Niclas Vödisch](https://vniclas.github.io/), [Daniele Cattaneo](https://rl.uni-freiburg.de/people/cattaneo), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard/), and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada).
->
+> **Continual SLAM: Beyond Lifelong Simultaneous Localization and Mapping through Continual Learning** <br>
+> [Niclas Vödisch](https://vniclas.github.io/), [Daniele Cattaneo](https://rl.uni-freiburg.de/people/cattaneo), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard/), and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada). <br>
 > *International Symposium on Robotics Research (ISRR)*, 2022
 
+> **CoVIO: Online Continual Learning for Visual-Inertial Odometry** <br>
+> [Niclas Vödisch](https://vniclas.github.io/), [Daniele Cattaneo](https://rl.uni-freiburg.de/people/cattaneo), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard/), and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada). <br>
+> *arXiv preprint arXiv:2303.10149*, 2023 <br>
+> *accepted at CVPR Workshop on Continual Learning in Computer Vision*
+
 <p align="center">
-  <img src="cl-slam_architecture.png" alt="Overview of CL-SLAM architecture" width="600" />
+  <img src="continual_slam_teaser.png" alt="Continual SLAM teaser" width="600" />
 </p>
 
-If you find our work useful, please consider citing our paper:
+If you find our work useful, please consider citing our papers:
 ```
 @InProceedings{voedisch2023clslam,
   author="V{\"o}disch, Niclas and Cattaneo, Daniele and Burgard, Wolfram and Valada, Abhinav",
@@ -27,8 +30,21 @@ If you find our work useful, please consider citing our paper:
 }
 ```
 
+```
+@article{voedisch2023covio,
+  title="CoVIO: Online Continual Learning for Visual-Inertial Odometry",
+  author="V{\"o}disch, Niclas and Cattaneo, Daniele and Burgard, Wolfram and Valada, Abhinav",
+  journal="arXiv preprint arXiv:2303.10149",
+  year="2023"
+}
+```
+
+<a href="https://github.com/opendr-eu/opendr"><img src="opendr_logo.png" alt="drawing" width="250"/></a><br>
+CL-SLAM and CoVIO are also featured in the [OpenDR toolkit](https://github.com/opendr-eu/opendr).
+
 ## 📔 Abstract
 
+### Continual SLAM
 While lifelong SLAM addresses the capability of a robot to adapt to changes within a single environment over time, in this paper we introduce the task of continual SLAM.
 Here, a robot is deployed sequentially in a variety of different environments and has to transfer its knowledge of previously experienced environments to thus far unseen environments, while avoiding catastrophic forgetting.
 This is particularly relevant in the context of vision-based approaches, where the relevant features vary widely between different environments.
@@ -36,6 +52,14 @@ We propose a novel approach for solving the continual SLAM problem by introducin
 Our approach consists of a dual-network architecture that handles both short-term adaptation and long-term memory retention by incorporating a replay buffer.
 Extensive evaluations of CL-SLAM in three different environments demonstrate that it outperforms several baselines inspired by existing continual learning-based visual odometry methods.
 
+### CoVIO
+Visual odometry is a fundamental task for many applications on mobile devices and robotic platforms.
+Since such applications are oftentimes not limited to predefined target domains and learning-based vision systems are known to generalize poorly to unseen environments, methods for continual adaptation during inference time are of significant interest.
+In this work, we introduce CoVIO for online continual learning of visual-inertial odometry.
+CoVIO effectively adapts to new domains while mitigating catastrophic forgetting by exploiting experience replay.
+In particular, we propose a novel sampling strategy to maximize image diversity in a fixed-size replay buffer that targets the limited storage capacity of embedded devices.
+We further provide an asynchronous version that decouples the odometry estimation from the network weight update step enabling continuous inference in real time.
+We extensively evaluate CoVIO on various real-world datasets demonstrating that it successfully adapts to new domains while outperforming previous methods.
 
 # 🏗 Setup
 
@@ -137,6 +161,14 @@ Then run:
 ```python
 python main_adapt.py
 ```
+
+## 📒 Notes
+
+### Continual SLAM
+The originally released code for *Continual SLAM*, i.e., without the extensions of *CoVIO*, can be found under commit [4ac27f6](https://github.com/robot-learning-freiburg/CL-SLAM/tree/4ac27f62478cb8301f73bb294be07b846235fe6a).
+
+### CoVIO
+The asynchronous variant is provided in the [OpenDR toolkit](https://github.com/opendr-eu/opendr).
 
 
 ## 👩‍⚖️ License

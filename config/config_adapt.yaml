@@ -10,12 +10,15 @@ Dataset:
 DepthPosePrediction:
   train_set: all
   val_set: 0
-  resnet: 18
+#  train_set: 2015-08-12-15-04-18
+#  val_set: 2015-08-12-15-04-18
+  resnet_depth: 18
+  resnet_pose: 18
   resnet_pretrained: true
   scales: [ 0, 1, 2, 3 ]  # Network size
-  learning_rate: 1e-4
+  learning_rate: 0.0001
   scheduler_step_size: 15
-  num_workers: 12
+  num_workers: 0
   num_epochs: 20
   min_depth: .1
   max_depth:
@@ -27,10 +30,17 @@ DepthPosePrediction:
   save_val_depth_batches: 0
   multiple_gpus: false
   gpu_ids:
-  batch_size: 1
+  batch_size: 3
   log_path: ./log/slam/c_k9
   load_weights_folder: ./log/cityscapes/models/weights_025
-  use_wandb:
+  use_wandb: False
+
+ReplayBuffer:
+  maximize_diversity: True
+  max_buffer_size: 100
+  similarity_threshold: .95
+  similarity_sampling: False
+  load_path: ./log/slam/c_k9/replay_buffer
 
 LoopClosureDetection:
   detection_threshold: .99
@@ -39,7 +49,7 @@ LoopClosureDetection:
 
 Slam:
   dataset_sequence: 6
-  adaptation: true
+  adaptation: True
   adaptation_epochs: 5
   min_distance: .2
   start_frame: 0  # Start mapping after this frame
