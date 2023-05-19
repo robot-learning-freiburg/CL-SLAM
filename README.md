@@ -9,8 +9,7 @@ This repository is the official implementation of the papers **Continual SLAM** 
 
 > **CoVIO: Online Continual Learning for Visual-Inertial Odometry** <br>
 > [Niclas Vödisch](https://vniclas.github.io/), [Daniele Cattaneo](https://rl.uni-freiburg.de/people/cattaneo), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard/), and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada). <br>
-> *arXiv preprint arXiv:2303.10149*, 2023 <br>
-> *accepted at CVPR Workshop on Continual Learning in Computer Vision*
+> *IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops*, 2023
 
 <p align="center">
   <img src="continual_slam_teaser.png" alt="Continual SLAM teaser" width="600" />
@@ -34,7 +33,7 @@ If you find our work useful, please consider citing our papers:
 @article{voedisch2023covio,
   title="CoVIO: Online Continual Learning for Visual-Inertial Odometry",
   author="V{\"o}disch, Niclas and Cattaneo, Daniele and Burgard, Wolfram and Valada, Abhinav",
-  journal="arXiv preprint arXiv:2303.10149",
+  journal="IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops",
   year="2023"
 }
 ```
