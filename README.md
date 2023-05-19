@@ -1,12 +1,14 @@
 # Continual SLAM
-[**arXiv**](https://arxiv.org/abs/2203.01578) | [**Website**](http://continual-slam.cs.uni-freiburg.de/) | [**Video**](https://youtu.be/ASEzwnV4vNk)
+[**Website**](http://continual-slam.cs.uni-freiburg.de/)
 
 This repository is the official implementation of the papers **Continual SLAM** and **CoVIO**:
 
+[**arXiv**](https://arxiv.org/abs/2203.01578) | [**Springer**](https://link.springer.com/chapter/10.1007/978-3-031-25555-7_3) | [**Video**](https://youtu.be/ASEzwnV4vNk)
 > **Continual SLAM: Beyond Lifelong Simultaneous Localization and Mapping through Continual Learning** <br>
 > [Niclas Vödisch](https://vniclas.github.io/), [Daniele Cattaneo](https://rl.uni-freiburg.de/people/cattaneo), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard/), and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada). <br>
 > *International Symposium on Robotics Research (ISRR)*, 2022
 
+[**arXiv**](https://arxiv.org/abs/2303.10149)
 > **CoVIO: Online Continual Learning for Visual-Inertial Odometry** <br>
 > [Niclas Vödisch](https://vniclas.github.io/), [Daniele Cattaneo](https://rl.uni-freiburg.de/people/cattaneo), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard/), and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada). <br>
 > *IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops*, 2023
