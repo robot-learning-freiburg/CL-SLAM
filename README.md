@@ -8,7 +8,7 @@ This repository is the official implementation of the papers **Continual SLAM** 
 > [Niclas Vödisch](https://vniclas.github.io/), [Daniele Cattaneo](https://rl.uni-freiburg.de/people/cattaneo), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard/), and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada). <br>
 > *International Symposium on Robotics Research (ISRR)*, 2022
 
-[**arXiv**](https://arxiv.org/abs/2303.10149)
+[**arXiv**](https://arxiv.org/abs/2303.10149) | [**IEEE Xplore**](https://ieeexplore.ieee.org/document/10209029)
 > **CoVIO: Online Continual Learning for Visual-Inertial Odometry** <br>
 > [Niclas Vödisch](https://vniclas.github.io/), [Daniele Cattaneo](https://rl.uni-freiburg.de/people/cattaneo), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard/), and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada). <br>
 > *IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops*, 2023
